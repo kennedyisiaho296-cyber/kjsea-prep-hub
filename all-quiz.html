@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre-Technical Studies Quiz Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    header { background: #007bff; color: white; padding: 15px; text-align: center; font-size: 1.5em; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+    button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    button:hover { background: #0056b3; }
+    .hidden { display: none; }
+    .question { margin-bottom: 15px; }
+    input[type="text"], input[type="password"] { padding: 8px; width: 100%; margin-bottom: 10px; }
+    .admin-section { background: #f8f9fa; padding: 15px; margin-top: 20px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+<header>Pre-Technical Studies Quiz Portal</header>
+
+<div class="container">
+
+  <!-- Login Section -->
+  <div id="login-section">
+    <h2>Login</h2>
+    <input type="text" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign Up</button>
+    <p id="login-message"></p>
+  </div>
+
+  <!-- Quiz Section -->
+  <div id="quiz-section" class="hidden">
+    <h2>Quiz: Introduction to Pre-Technical Studies</h2>
+    <form id="quiz-form">
+      <div class="question">
+        <label>1. Define Pre-Technical Studies.</label><br>
+        <input type="text" name="q1">
+      </div>
+      <div class="question">
+        <label>2. State two benefits of learning Pre-Technical Studies.</label><br>
+        <input type="text" name="q2">
+      </div>
+      <div class="question">
+        <label>3. List three career opportunities related to Pre-Technical Studies.</label><br>
+        <input type="text" name="q3">
+      </div>
+    </form>
+    <button onclick="submitQuiz()">Submit Quiz</button>
+    <p id="quiz-result"></p>
+  </div>
+
+  <!-- Admin Section -->
+  <div id="admin-section" class="hidden admin-section">
+    <h2>Admin Panel</h2>
+    <p>Only for teachers or admins.</p>
+    <button onclick="viewResults()">View Quiz Results</button>
+    <div id="results"></div>
+  </div>
+
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdCA3BnUhJfpERvRnJjzUtGxxrD8GPVj8",
+    authDomain: "pretech-quiz.firebaseapp.com",
+    projectId: "pretech-quiz",
+    storageBucket: "pretech-quiz.firebasestorage.app",
+    messagingSenderId: "724841611391",
+    appId: "1:724841611391:web:cf6b7e7c7ebbabf0dfff4a",
+    measurementId: "G-Q0HQCEZGXG"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // User login
+  window.login = function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("login-message").innerText = "Login successful!";
+        document.getElementById("login-section").classList.add("hidden");
+        document.getElementById("quiz-section").classList.remove("hidden");
+      })
+      .catch(err => document.getElementById("login-message").innerText = err.message);
+  }
+
+  // User sign up
+  window.signup = function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => document.getElementById("login-message").innerText = "Account created! Please log in.")
+      .catch(err => document.getElementById("login-message").innerText = err.message);
+  }
+
+  // Submit Quiz
+  window.submitQuiz = async function() {
+    const form = document.getElementById("quiz-form");
+    const answers = {
+      q1: form.q1.value,
+      q2: form.q2.value,
+      q3: form.q3.value,
+      user: auth.currentUser.email
+    };
+    await addDoc(collection(db, "quizResults"), answers);
+    document.getElementById("quiz-result").innerText = "Quiz submitted successfully!";
+  }
+
+  // View Results (Admin)
+  window.viewResults = async function() {
+    const querySnapshot = await getDocs(collection(db, "quizResults"));
+    let html = "<ul>";
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      html += `<li>${data.user}: Q1=${data.q1}, Q2=${data.q2}, Q3=${data.q3}</li>`;
+    });
+    html += "</ul>";
+    document.getElementById("results").innerHTML = html;
+  }
+
+  // Auto show admin panel for a specific user
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      if (user.email === "admin@example.com") {
+        document.getElementById("admin-section").classList.remove("hidden");
+      }
+    }
+  });
+
+</script>
+
+</body>
+</html>
