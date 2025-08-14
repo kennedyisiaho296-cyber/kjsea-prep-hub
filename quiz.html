@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pre-Tech Quiz</title>
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdCA3BnUhJfpERvRnJjzUtGxxrD8GPVj8",
+      authDomain: "pretech-quiz.firebaseapp.com",
+      projectId: "pretech-quiz",
+      storageBucket: "pretech-quiz.firebasestorage.app",
+      messagingSenderId: "724841611391",
+      appId: "1:724841611391:web:cf6b7e7c7ebbabf0dfff4a",
+      measurementId: "G-Q0HQCEZGXG"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const analytics = getAnalytics(app);
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          document.getElementById("login-section").style.display = "none";
+          document.getElementById("quiz-section").style.display = "block";
+        })
+        .catch((error) => alert("Login failed: " + error.message));
+    }
+
+    function logout() {
+      signOut(auth);
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("quiz-section").style.display = "none";
+      }
+    });
+
+    function checkAnswers() {
+      let score = 0;
+      const answers = {
+        q1: "Pre-Technical Studies",
+        q2: "Skills",
+        q3: "Safety",
+        q4: "Computer",
+        q5: "Entrepreneurship"
+      };
+      for (const q in answers) {
+        const selected = document.querySelector(`input[name="${q}"]:checked`);
+        if (selected && selected.value === answers[q]) {
+          score += 6;
+        }
+      }
+      document.getElementById("result").innerText = `Your score: ${score}/30`;
+    }
+  </script>
+</head>
+<body>
+  <h1>Pre-Technical Studies Quiz</h1>
+  <div id="login-section">
+    <h3>Login to Access Quiz</h3>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+  </div>
+  <div id="quiz-section" style="display:none;">
+    <h3>Answer All Questions</h3>
+    <form>
+      <p>1. Which subject introduces learners to basic technical skills?</p>
+      <input type="radio" name="q1" value="Pre-Technical Studies">Pre-Technical Studies<br>
+      <input type="radio" name="q1" value="Mathematics">Mathematics<br>
+
+      <p>2. Pre-Technical Studies teaches learners practical ______.</p>
+      <input type="radio" name="q2" value="Skills">Skills<br>
+      <input type="radio" name="q2" value="Songs">Songs<br>
+
+      <p>3. Observing safety rules is part of ______ in pre-tech.</p>
+      <input type="radio" name="q3" value="Safety">Safety<br>
+      <input type="radio" name="q3" value="Drawing">Drawing<br>
+
+      <p>4. Which device processes information electronically?</p>
+      <input type="radio" name="q4" value="Computer">Computer<br>
+      <input type="radio" name="q4" value="Hammer">Hammer<br>
+
+      <p>5. Which area in pre-tech covers starting and running businesses?</p>
+      <input type="radio" name="q5" value="Entrepreneurship">Entrepreneurship<br>
+      <input type="radio" name="q5" value="Carpentry">Carpentry<br>
+    </form>
+    <button onclick="checkAnswers()">Submit</button>
+    <p id="result"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+</body>
+</html>
